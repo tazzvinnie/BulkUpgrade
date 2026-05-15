@@ -1,4 +1,4 @@
-# Bulk Upgrade 0.1.0
+# Bulk Upgrade 1.0.0
 
 ## Short Description
 
@@ -44,7 +44,7 @@ Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under
 
 ## Changelog
 
-### 0.1.0
+### 1.0.0
 
 - Ported MassUpgrade-style logistics upgrading to current Satisfactory/SML APIs.
 - Added craftable/equippable Bulk Upgrade Tool.
