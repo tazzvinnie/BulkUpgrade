@@ -1,4 +1,4 @@
-# Bulk Upgrade 1.0.0
+# Bulk Upgrade 1.1.0
 
 ## Short Description
 
@@ -43,6 +43,11 @@ This first public build is marked beta because multiplayer and dedicated-server 
 Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under GPLv3. The GPLv3 license text is included with the project.
 
 ## Changelog
+
+### 1.1.0
+
+- Fixed the release package so it includes both Steam and Epic/EGS Windows binaries.
+- No gameplay changes from 1.0.0.
 
 ### 1.0.0
 

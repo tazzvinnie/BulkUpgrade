@@ -17,7 +17,7 @@ Equip the Bulk Upgrade Tool, aim at a supported logistics buildable, and open a 
 
 ## Current Release Status
 
-Version `1.0.0` is marked beta.
+Version `1.1.0` is marked beta.
 
 Single-player testing on large local factories has been stable after the current conveyor-chain rewrite. Multiplayer and dedicated-server behavior are not claimed yet. Keep save backups before bulk-editing important worlds.
 
