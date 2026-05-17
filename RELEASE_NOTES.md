@@ -52,4 +52,4 @@ Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under
 - Reworked belt/lift replacement to avoid unsafe direct conveyor-chain state transfer.
 - Added pipe and pump upgrade support.
 - Fixed the hand-tool placement by matching the base-game Object Scanner equipment transform.
-- Packaged for Satisfactory CL 463028 / SML 3.11.x local testing.
+- Packaged with both Steam and Epic/EGS Windows binaries for Satisfactory CL 463028 / SML 3.11.x.
