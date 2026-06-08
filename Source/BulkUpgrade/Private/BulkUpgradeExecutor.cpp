@@ -1277,7 +1277,7 @@ bool UBulkUpgradeExecutor::CommitWithHologramPath(AFGCharacterPlayer* Player, FB
 
 	Hologram->SetInsideBlueprintDesigner(SourceBuildable->GetBlueprintDesigner());
 
-	UPrimitiveComponent* PrimitiveComponent = Hologram->GetComponentByClass<UPrimitiveComponent>();
+	UPrimitiveComponent* PrimitiveComponent = SourceBuildable->GetComponentByClass<UPrimitiveComponent>();
 	FHitResult HitResult(SourceBuildable, PrimitiveComponent, SourceBuildable->GetActorLocation(), SourceBuildable->GetActorRotation().Vector());
 
 	if (!Hologram->TryUpgrade(HitResult))
@@ -1320,9 +1320,9 @@ bool UBulkUpgradeExecutor::CommitWithHologramPath(AFGCharacterPlayer* Player, FB
 	if (!Hologram->CanConstruct())
 	{
 		const FString DisqualifierText = DescribeConstructDisqualifiers(Hologram);
-		if (bIsConveyorFamily && HasOnlyProgrammaticUpgradeDisqualifiers(Hologram))
+		if (HasOnlyProgrammaticUpgradeDisqualifiers(Hologram))
 		{
-			UE_LOG(LogBulkUpgrade, Display, TEXT("BulkUpgrade conveyor/lift hologram has programmatic-only disqualifiers for %s -> %s; continuing with subsystem bucket rebuild. disqualifiers=[%s]"),
+			UE_LOG(LogBulkUpgrade, Display, TEXT("BulkUpgrade hologram has programmatic-only disqualifiers for %s -> %s; continuing with validated upgrade. disqualifiers=[%s]"),
 				*GetNameSafe(SourceBuildable),
 				*GetNameSafe(Row.TargetRecipe.Get()),
 				*DisqualifierText);
