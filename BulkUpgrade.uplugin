@@ -1,9 +1,9 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.1.0",
-	"SemVersion": "1.1.0",
-	"GameVersion": ">=416835",
+	"Version": 2,
+	"VersionName": "1.2.0",
+	"SemVersion": "1.2.0",
+	"GameVersion": ">=491125",
 	"FriendlyName": "Bulk Upgrade",
 	"Description": "Mass-upgrade belts, lifts, pipes, and pumps with an equipable MassUpgrade-style tool.",
 	"Category": "Quality of Life",
@@ -33,7 +33,7 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.3"
+			"SemVersion": "^3.12.0"
 		}
 	]
 }

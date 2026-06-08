@@ -1508,7 +1508,7 @@ TArray<FItemAmount> UBulkUpgradeMassUpgradePopup::BuildCostItems() const
 			Multiplier += FMath::Max(1, FMath::RoundToInt(GetBuildableCostMultiplier(Buildable)));
 		}
 
-		const TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(SelectedOption->Item.Recipe);
+		const TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(this, SelectedOption->Item.Recipe);
 		for (const FItemAmount& Ingredient : Ingredients)
 		{
 			AddItemAmount(CostItems, Ingredient, Multiplier);
@@ -1528,7 +1528,7 @@ TArray<FItemAmount> UBulkUpgradeMassUpgradePopup::BuildRefundItems(const FBulkUp
 		}
 
 		const int32 Multiplier = FMath::Max(1, FMath::RoundToInt(GetBuildableCostMultiplier(Buildable)));
-		const TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(Buildable->GetBuiltWithRecipe());
+		const TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(this, Buildable->GetBuiltWithRecipe());
 		for (const FItemAmount& Ingredient : Ingredients)
 		{
 			AddItemAmount(RefundItems, Ingredient, Multiplier);

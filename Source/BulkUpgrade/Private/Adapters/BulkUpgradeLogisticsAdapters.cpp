@@ -248,7 +248,7 @@ FBulkUpgradePreviewRow BuildCommonRow(AActor* Actor, const FBulkUpgradeRequest& 
 	}
 	else if (Request.bEstimateCosts)
 	{
-		Row.EstimatedGrossCost = UFGRecipe::GetIngredients(TargetRecipe);
+		Row.EstimatedGrossCost = UFGRecipe::GetIngredients(Buildable, TargetRecipe);
 		AdapterScaleCost(Row.EstimatedGrossCost, Row.CostMultiplier);
 		Row.CostNote = Request.CostPolicy == EBulkUpgradeCostPolicy::VerifiedVanillaCost
 			? LOCTEXT("VerifiedCostRequestedNote", "Vanilla cost policy requested, but this row still needs real inventory/payment verification.")

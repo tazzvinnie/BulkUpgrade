@@ -729,8 +729,6 @@ bool PlanStorageFactoryConnectionTransfers(AFGBuildableStorage* SourceStorage, A
 
 		const FVector OldLocation = OldConnection->GetComponentLocation();
 		const EFactoryConnectionDirection OldDirection = OldConnection->GetDirection();
-		const EFactoryConnectionConnector OldConnector = OldConnection->GetConnector();
-
 		UFGFactoryConnectionComponent* BestConnection = nullptr;
 		float BestDistance = TNumericLimits<float>::Max();
 		for (UFGFactoryConnectionComponent* NewConnection : NewComponents)
@@ -740,7 +738,7 @@ bool PlanStorageFactoryConnectionTransfers(AFGBuildableStorage* SourceStorage, A
 				continue;
 			}
 
-			if (NewConnection->GetDirection() != OldDirection || NewConnection->GetConnector() != OldConnector)
+			if (NewConnection->GetDirection() != OldDirection)
 			{
 				continue;
 			}
@@ -1463,7 +1461,6 @@ bool UBulkUpgradeExecutor::CommitWithManualSpawnPath(AFGCharacterPlayer* Player,
 		AttachToBlueprintDesigner(SourceStorage, TargetStorage);
 		UGameplayStatics::FinishSpawningActor(TargetStorage, Transform);
 		TargetStorage->SetBuiltWithRecipe(Row.TargetRecipe);
-		TargetStorage->SetOriginalBuildableVariant(TargetBuildableClass);
 
 		UFGInventoryComponent* TargetInventory = TargetStorage->GetStorageInventory();
 		if (!TargetInventory)
@@ -1564,7 +1561,6 @@ bool UBulkUpgradeExecutor::CommitWithManualSpawnPath(AFGCharacterPlayer* Player,
 		AttachToBlueprintDesigner(SourcePump, TargetPump);
 		UGameplayStatics::FinishSpawningActor(TargetPump, Transform);
 		TargetPump->SetBuiltWithRecipe(Row.TargetRecipe);
-		TargetPump->SetOriginalBuildableVariant(TargetBuildableClass);
 
 		if (TargetPump->GetPipeConnections().Num() < 2)
 		{

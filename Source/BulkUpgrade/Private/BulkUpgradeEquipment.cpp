@@ -94,7 +94,7 @@ FText MakeRefundLabel(const AFGBuildable* Buildable)
 		return LOCTEXT("NoRefund", "Refund\n-");
 	}
 
-	TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(BuiltWithRecipe);
+	TArray<FItemAmount> Ingredients = UFGRecipe::GetIngredients(Buildable, BuiltWithRecipe);
 	if (Ingredients.Num() == 0)
 	{
 		return LOCTEXT("NoRefundIngredients", "Refund\n-");
