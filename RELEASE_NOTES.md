@@ -1,4 +1,4 @@
-# Bulk Upgrade 1.1.0
+# Bulk Upgrade 3.0.1
 
 ## Short Description
 
@@ -43,6 +43,17 @@ This first public build is marked beta because multiplayer and dedicated-server 
 Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under GPLv3. The GPLv3 license text is included with the project.
 
 ## Changelog
+
+### 3.0.1
+
+- Fixed a delayed conveyor item-subsystem crash after large belt upgrades.
+- Removed the second manual conveyor bucket detach/rebuild after the vanilla upgrade path already transferred the belt.
+- Updated for Satisfactory 1.2 / SML 3.12.0.
+
+### 3.0.0
+
+- Updated for Satisfactory 1.2 / SML 3.12.0.
+- Added guarded support for validated programmatic upgrades.
 
 ### 1.1.0
 

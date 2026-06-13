@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 3,
-	"VersionName": "3.0.0",
-	"SemVersion": "3.0.0",
+	"Version": 4,
+	"VersionName": "3.0.1",
+	"SemVersion": "3.0.1",
 	"GameVersion": ">=491125",
 	"FriendlyName": "Bulk Upgrade",
 	"Description": "Mass-upgrade belts, lifts, pipes, and pumps with an equipable MassUpgrade-style tool.",

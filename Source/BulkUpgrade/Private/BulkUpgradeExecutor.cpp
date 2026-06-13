@@ -349,75 +349,25 @@ bool ReconnectConveyor(AFGBuildableConveyorBase* SourceConveyor, AFGBuildableCon
 	return true;
 }
 
-void DetachConveyorFromSubsystem(AFGBuildableSubsystem* BuildableSubsystem, AFGBuildableConveyorBase* Conveyor, const TCHAR* Role)
+bool ValidateVanillaConveyorUpgrade(AFGBuildableConveyorBase* SourceConveyor, AFGBuildableConveyorBase* TargetConveyor)
 {
-	if (!IsValid(BuildableSubsystem) || !IsValid(Conveyor))
+	if (!IsValid(SourceConveyor) || !IsValid(TargetConveyor))
 	{
-		return;
-	}
-
-	const int32 OldBucket = Conveyor->GetConveyorBucketID();
-	AFGConveyorChainActor* OldChain = Conveyor->GetConveyorChainActor();
-	if (OldBucket != INDEX_NONE || IsValid(OldChain))
-	{
-		const bool bRemovedBucket = BuildableSubsystem->RemoveConveyorFromBucket(Conveyor);
-		UE_LOG(LogBulkUpgrade, Display,
-			TEXT("BulkUpgrade conveyor subsystem detach role=%s conveyor=%s oldBucket=%d oldChain=%s removedBucket=%s"),
-			Role,
-			*GetNameSafe(Conveyor),
-			OldBucket,
-			*GetNameSafe(OldChain),
-			bRemovedBucket ? TEXT("true") : TEXT("false"));
-	}
-
-	Conveyor->SetNextTickConveyor(nullptr);
-	Conveyor->SetConveyorChainFlags(0);
-	Conveyor->SetConveyorBucketID(INDEX_NONE);
-	Conveyor->SetConveyorChainActor(nullptr);
-	Conveyor->MarkItemTransformsDirty();
-}
-
-bool RebuildConveyorThroughSubsystem(AFGBuildableSubsystem* BuildableSubsystem, AFGBuildableConveyorBase* SourceConveyor, AFGBuildableConveyorBase* TargetConveyor)
-{
-	if (!IsValid(BuildableSubsystem) || !IsValid(SourceConveyor) || !IsValid(TargetConveyor))
-	{
-		UE_LOG(LogBulkUpgrade, Warning, TEXT("RebuildConveyorThroughSubsystem: invalid parameters subsystem=%s source=%s target=%s"),
-			*GetNameSafe(BuildableSubsystem),
+		UE_LOG(LogBulkUpgrade, Warning, TEXT("ValidateVanillaConveyorUpgrade: invalid parameters source=%s target=%s"),
 			*GetNameSafe(SourceConveyor),
 			*GetNameSafe(TargetConveyor));
 		return false;
 	}
 
-	DetachConveyorFromSubsystem(BuildableSubsystem, SourceConveyor, TEXT("source"));
-	DetachConveyorFromSubsystem(BuildableSubsystem, TargetConveyor, TEXT("target"));
-
-	if (!ReconnectConveyor(SourceConveyor, TargetConveyor))
-	{
-		return false;
-	}
-
-	BuildableSubsystem->AddConveyor(TargetConveyor);
-	const int32 NewBucket = TargetConveyor->GetConveyorBucketID();
-	if (NewBucket != INDEX_NONE)
-	{
-		BuildableSubsystem->AssignConveyorTickOrder(NewBucket);
-	}
-	else
-	{
-		UE_LOG(LogBulkUpgrade, Warning,
-			TEXT("BulkUpgrade conveyor subsystem rebuild left target without an immediate bucket; keeping constructed actor for vanilla registration. target=%s"),
-			*GetNameSafe(TargetConveyor));
-	}
-
 	UE_LOG(LogBulkUpgrade, Display,
-		TEXT("BulkUpgrade conveyor subsystem rebuild target=%s bucket=%d chain=%s conn0=%s conn1=%s"),
+		TEXT("BulkUpgrade left conveyor registration to vanilla upgrade path target=%s bucket=%d chain=%s conn0=%s conn1=%s"),
 		*GetNameSafe(TargetConveyor),
-		NewBucket,
+		TargetConveyor->GetConveyorBucketID(),
 		*GetNameSafe(TargetConveyor->GetConveyorChainActor()),
 		*GetNameSafe(TargetConveyor->GetConnection0() ? TargetConveyor->GetConnection0()->GetConnection() : nullptr),
 		*GetNameSafe(TargetConveyor->GetConnection1() ? TargetConveyor->GetConnection1()->GetConnection() : nullptr));
 
-	return true;
+	return TargetConveyor->GetConnection0() != nullptr && TargetConveyor->GetConnection1() != nullptr;
 }
 
 bool ReconnectPipeline(AFGBuildablePipeline* SourcePipeline, AFGBuildablePipeline* TargetPipeline)
@@ -1363,7 +1313,7 @@ bool UBulkUpgradeExecutor::CommitWithHologramPath(AFGCharacterPlayer* Player, FB
 	if (bIsConveyorFamily)
 	{
 		AFGBuildableConveyorBase* TargetConveyor = Cast<AFGBuildableConveyorBase>(TargetBuildable);
-		bReconnected = RebuildConveyorThroughSubsystem(BuildableSubsystem, SourceConveyor, TargetConveyor);
+		bReconnected = ValidateVanillaConveyorUpgrade(SourceConveyor, TargetConveyor);
 	}
 	else if (Row.Family == EBulkUpgradeFamily::Pipeline)
 	{

@@ -2,6 +2,10 @@
 
 `BulkUpgrade` is intended as a GPLv3 fork/port of MassUpgrade with attribution to the original author.
 
+This modified fork is maintained by TazzVinnie. The current `3.0.1` source was
+updated on 2026-06-13 and corresponds to the distributed Steam and Epic/EGS
+Windows binaries.
+
 Implementation evidence and derivative design lineage:
 
 - MassUpgrade-SML3 by MarcioHuser
