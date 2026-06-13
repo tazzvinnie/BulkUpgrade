@@ -48,6 +48,7 @@ Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under
 
 - Fixed a delayed conveyor item-subsystem crash after large belt upgrades.
 - Removed the second manual conveyor bucket detach/rebuild after the vanilla upgrade path already transferred the belt.
+- Added a safety cap of 100 buildables per upgrade click to avoid huge single-frame mutation spikes.
 - Updated for Satisfactory 1.2 / SML 3.12.0.
 
 ### 3.0.0

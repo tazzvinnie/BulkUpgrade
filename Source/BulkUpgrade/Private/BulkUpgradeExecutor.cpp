@@ -1573,7 +1573,12 @@ FBulkUpgradeCommitReport UBulkUpgradeExecutor::CommitPlan(UObject* WorldContextO
 
 	Report.Messages.Add(LOCTEXT("MassUpgradeUpgradePath", "Using MassUpgrade-derived local upgrade path for this commit."));
 
-	const int32 MaxAttempts = FMath::Clamp(Options.MaxOperationsPerCall, 1, 1000);
+	constexpr int32 SafeOperationsPerCall = 100;
+	const int32 MaxAttempts = FMath::Clamp(Options.MaxOperationsPerCall, 1, SafeOperationsPerCall);
+	if (Options.MaxOperationsPerCall > SafeOperationsPerCall)
+	{
+		Report.Messages.Add(LOCTEXT("SafeAttemptCap", "Safety cap active: at most 100 buildables are upgraded per click."));
+	}
 	
 	// Performance optimization: Pre-allocate arrays for large operations
 	TArray<FBulkUpgradePreviewRow*> EligibleRows;

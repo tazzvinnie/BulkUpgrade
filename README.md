@@ -24,6 +24,7 @@ Single-player testing on large local factories has been stable after the current
 The Windows release package includes both Steam and Epic/EGS binaries.
 
 Version `3.0.1` removes a second manual conveyor bucket rebuild that could cause a delayed conveyor item-subsystem crash after large belt upgrades.
+It also limits each upgrade click to 100 buildables; repeat the operation for larger connected lines.
 
 ## In Game
 
