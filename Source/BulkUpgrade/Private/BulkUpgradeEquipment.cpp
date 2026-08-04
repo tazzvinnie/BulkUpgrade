@@ -898,6 +898,8 @@ FBulkUpgradeRequest ABulkUpgradeEquipment::MakeRequest(TSubclassOf<UFGRecipe> Ta
 	Request.ExecutionProfile = EBulkUpgradeExecutionProfile::LocalOnlyDev;
 	Request.CostPolicy = EBulkUpgradeCostPolicy::FreeLocalDev;
 	Request.bAllowConnectedScope = Scope != EBulkUpgradeScope::Single;
+	Request.bAllowConveyorBelts = Request.Family == EBulkUpgradeFamily::ConveyorBelt;
+	Request.bAllowConveyorLifts = Request.Family == EBulkUpgradeFamily::ConveyorLift;
 	Request.bAllowPipelines =
 		Request.Family == EBulkUpgradeFamily::Pipeline ||
 		Request.Family == EBulkUpgradeFamily::PipelinePump;
@@ -911,6 +913,11 @@ FBulkUpgradeRequest ABulkUpgradeEquipment::MakeRequest(TSubclassOf<UFGRecipe> Ta
 		Request.Family == EBulkUpgradeFamily::PowerPoleWall ||
 		Request.Family == EBulkUpgradeFamily::PowerPoleWallDouble ||
 		Request.Family == EBulkUpgradeFamily::PowerTower;
+	Request.bAllowWire = Request.Family == EBulkUpgradeFamily::Wire;
+	Request.bAllowPowerPole = Request.Family == EBulkUpgradeFamily::PowerPole;
+	Request.bAllowPowerPoleWall = Request.Family == EBulkUpgradeFamily::PowerPoleWall;
+	Request.bAllowPowerPoleWallDouble = Request.Family == EBulkUpgradeFamily::PowerPoleWallDouble;
+	Request.bAllowPowerTower = Request.Family == EBulkUpgradeFamily::PowerTower;
 	Request.bEstimateCosts = false;
 	return Request;
 }

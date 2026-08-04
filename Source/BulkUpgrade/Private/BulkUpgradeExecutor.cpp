@@ -82,7 +82,9 @@ bool HasOnlyProgrammaticUpgradeDisqualifiers(const AFGHologram* Hologram)
 	for (TSubclassOf<UFGConstructDisqualifier> Disqualifier : Disqualifiers)
 	{
 		const FString Name = GetNameSafe(Disqualifier.Get());
-		if (Name != TEXT("FGCDInitializing") && Name != TEXT("FGCDInvalidAimLocation"))
+		if (Name != TEXT("FGCDInitializing") &&
+			Name != TEXT("FGCDInvalidAimLocation") &&
+			Name != TEXT("FGCDUnaffordable"))
 		{
 			return false;
 		}
@@ -334,19 +336,23 @@ bool ReconnectConveyor(AFGBuildableConveyorBase* SourceConveyor, AFGBuildableCon
 		return false;
 	}
 
+	bool bTransferOk = true;
+
 	if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection0()->GetConnection())
 	{
 		SourceConveyor->GetConnection0()->ClearConnection();
 		TargetConveyor->GetConnection0()->SetConnection(Connection);
+		bTransferOk &= TargetConveyor->GetConnection0()->IsConnected();
 	}
 
 	if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection1()->GetConnection())
 	{
 		SourceConveyor->GetConnection1()->ClearConnection();
 		TargetConveyor->GetConnection1()->SetConnection(Connection);
+		bTransferOk &= TargetConveyor->GetConnection1()->IsConnected();
 	}
 
-	return true;
+	return bTransferOk;
 }
 
 bool ValidateVanillaConveyorUpgrade(AFGBuildableConveyorBase* SourceConveyor, AFGBuildableConveyorBase* TargetConveyor)
@@ -955,24 +961,6 @@ bool UBulkUpgradeExecutor::ConveyorSegmentBelongsToDifferentValidChain(const AFG
 		Conveyor->GetConveyorChainActor() != ExpectedChainActor;
 }
 
-bool UBulkUpgradeExecutor::ConveyorChainContainsConveyor(const AFGConveyorChainActor* ChainActor, const AFGBuildableConveyorBase* Conveyor)
-{
-	if (!IsValid(ChainActor) || !IsValid(Conveyor))
-	{
-		return false;
-	}
-
-	for (const FConveyorChainSplineSegment& Segment : ChainActor->mChainSplineSegments)
-	{
-		if (Segment.ConveyorBase == Conveyor)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
 bool UBulkUpgradeExecutor::ConveyorChainNeedsStructuralRescue(AFGConveyorChainActor* ChainActor)
 {
 	if (!IsValid(ChainActor))
@@ -1313,7 +1301,7 @@ bool UBulkUpgradeExecutor::CommitWithHologramPath(AFGCharacterPlayer* Player, FB
 	if (bIsConveyorFamily)
 	{
 		AFGBuildableConveyorBase* TargetConveyor = Cast<AFGBuildableConveyorBase>(TargetBuildable);
-		bReconnected = ValidateVanillaConveyorUpgrade(SourceConveyor, TargetConveyor);
+		bReconnected = ReconnectConveyor(SourceConveyor, TargetConveyor) && ValidateVanillaConveyorUpgrade(SourceConveyor, TargetConveyor);
 	}
 	else if (Row.Family == EBulkUpgradeFamily::Pipeline)
 	{

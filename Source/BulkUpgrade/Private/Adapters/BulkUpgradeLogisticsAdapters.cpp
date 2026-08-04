@@ -15,6 +15,7 @@
 #include "FGFactoryConnectionComponent.h"
 #include "FGPowerConnectionComponent.h"
 #include "FGPipeConnectionComponent.h"
+#include "Resources/FGBuildDescriptor.h"
 #include "Resources/FGBuildingDescriptor.h"
 
 #define LOCTEXT_NAMESPACE "BulkUpgradeLogisticsAdapters"
@@ -127,14 +128,19 @@ bool IsFamilyAllowedByRequest(EBulkUpgradeFamily Family, const FBulkUpgradeReque
 	case EBulkUpgradeFamily::PipelinePump:
 		return Request.bAllowPipelinePumps;
 	case EBulkUpgradeFamily::Wire:
+		return Request.bAllowPower && Request.bAllowWire;
 	case EBulkUpgradeFamily::PowerPole:
+		return Request.bAllowPower && Request.bAllowPowerPole;
 	case EBulkUpgradeFamily::PowerPoleWall:
+		return Request.bAllowPower && Request.bAllowPowerPoleWall;
 	case EBulkUpgradeFamily::PowerPoleWallDouble:
+		return Request.bAllowPower && Request.bAllowPowerPoleWallDouble;
 	case EBulkUpgradeFamily::PowerTower:
-		return Request.bAllowPower;
+		return Request.bAllowPower && Request.bAllowPowerTower;
 	case EBulkUpgradeFamily::ConveyorBelt:
+		return Request.bAllowConveyorBelts;
 	case EBulkUpgradeFamily::ConveyorLift:
-		return true;
+		return Request.bAllowConveyorLifts;
 	case EBulkUpgradeFamily::Unknown:
 	default:
 		return false;
@@ -193,6 +199,12 @@ FBulkUpgradePreviewRow BuildCommonRow(AActor* Actor, const FBulkUpgradeRequest& 
 	if (!IsFamilyAllowedByRequest(Family, Request))
 	{
 		return MakeAdapterSkippedRow(Actor, Family, LOCTEXT("FamilyDisabled", "This MassUpgrade family is disabled for this request."));
+	}
+
+	TSubclassOf<UFGBuildDescriptor> SourceDescriptor = Buildable->GetBuiltWithDescriptor<UFGBuildDescriptor>();
+	if (SourceDescriptor && Request.ExcludedBuildDescriptors.Contains(SourceDescriptor))
+	{
+		return MakeAdapterSkippedRow(Actor, Family, LOCTEXT("ExcludedByRow", "This build type was unchecked in the upgrade list."));
 	}
 
 	TSubclassOf<UFGRecipe> TargetRecipe = ResolveTargetRecipeForFamily(Request, Family);

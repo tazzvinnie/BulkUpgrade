@@ -121,6 +121,12 @@ struct BULKUPGRADE_API FBulkUpgradeRequest
 	bool bAllowConnectedScope = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowConveyorBelts = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowConveyorLifts = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
 	bool bAllowPipelines = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
@@ -133,7 +139,25 @@ struct BULKUPGRADE_API FBulkUpgradeRequest
 	bool bAllowPower = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowWire = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowPowerPole = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowPowerPoleWall = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowPowerPoleWallDouble = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	bool bAllowPowerTower = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
 	bool bEstimateCosts = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BulkUpgrade")
+	TArray<TSubclassOf<UFGBuildDescriptor>> ExcludedBuildDescriptors;
 };
 
 USTRUCT(BlueprintType)

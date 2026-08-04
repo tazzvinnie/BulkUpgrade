@@ -115,8 +115,9 @@ bool RequestAllowsFamily(EBulkUpgradeFamily Family, const FBulkUpgradeRequest& R
 	switch (Family)
 	{
 	case EBulkUpgradeFamily::ConveyorBelt:
+		return Request.bAllowConveyorBelts;
 	case EBulkUpgradeFamily::ConveyorLift:
-		return true;
+		return Request.bAllowConveyorLifts;
 	case EBulkUpgradeFamily::Storage:
 		return Request.bAllowStorage;
 	case EBulkUpgradeFamily::Pipeline:
@@ -124,11 +125,15 @@ bool RequestAllowsFamily(EBulkUpgradeFamily Family, const FBulkUpgradeRequest& R
 	case EBulkUpgradeFamily::PipelinePump:
 		return Request.bAllowPipelinePumps;
 	case EBulkUpgradeFamily::Wire:
+		return Request.bAllowPower && Request.bAllowWire;
 	case EBulkUpgradeFamily::PowerPole:
+		return Request.bAllowPower && Request.bAllowPowerPole;
 	case EBulkUpgradeFamily::PowerPoleWall:
+		return Request.bAllowPower && Request.bAllowPowerPoleWall;
 	case EBulkUpgradeFamily::PowerPoleWallDouble:
+		return Request.bAllowPower && Request.bAllowPowerPoleWallDouble;
 	case EBulkUpgradeFamily::PowerTower:
-		return Request.bAllowPower;
+		return Request.bAllowPower && Request.bAllowPowerTower;
 	case EBulkUpgradeFamily::Unknown:
 	default:
 		return false;

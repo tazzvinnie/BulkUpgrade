@@ -1293,16 +1293,32 @@ FBulkUpgradeRequest UBulkUpgradeMassUpgradePopup::BuildRequestFromSelections(EBu
 	Request.ExecutionProfile = EBulkUpgradeExecutionProfile::LocalOnlyDev;
 	Request.CostPolicy = EBulkUpgradeCostPolicy::FreeLocalDev;
 	Request.bAllowConnectedScope = Scope != EBulkUpgradeScope::Single;
+	Request.bAllowConveyorBelts = FunctionToggles.FindRef(ToggleBelts);
+	Request.bAllowConveyorLifts = FunctionToggles.FindRef(ToggleLifts);
 	Request.bAllowPipelines = FunctionToggles.FindRef(TogglePipelines);
 	Request.bAllowStorage = FunctionToggles.FindRef(ToggleStorage);
 	Request.bAllowPipelinePumps = FunctionToggles.FindRef(TogglePumps);
+	Request.bAllowWire = FunctionToggles.FindRef(ToggleWires);
+	Request.bAllowPowerPole = FunctionToggles.FindRef(TogglePowerPoles);
+	Request.bAllowPowerPoleWall = FunctionToggles.FindRef(TogglePowerPoleWalls);
+	Request.bAllowPowerPoleWallDouble = FunctionToggles.FindRef(TogglePowerPoleWallDoubles);
+	Request.bAllowPowerTower = FunctionToggles.FindRef(TogglePowerTowers);
 	Request.bAllowPower =
-		FunctionToggles.FindRef(ToggleWires) ||
-		FunctionToggles.FindRef(TogglePowerPoles) ||
-		FunctionToggles.FindRef(TogglePowerPoleWalls) ||
-		FunctionToggles.FindRef(TogglePowerPoleWallDoubles) ||
-		FunctionToggles.FindRef(TogglePowerTowers);
+		Request.bAllowWire ||
+		Request.bAllowPowerPole ||
+		Request.bAllowPowerPoleWall ||
+		Request.bAllowPowerPoleWallDouble ||
+		Request.bAllowPowerTower;
 	Request.bEstimateCosts = false;
+
+	for (const FBulkUpgradeProductionGroup& Group : ProductionInfo.Groups)
+	{
+		if (Group.BuildDescriptor && !UBulkUpgradeWidgetPopupHelper::IsBuildDescriptorChecked(Group.BuildDescriptor, true))
+		{
+			Request.ExcludedBuildDescriptors.AddUnique(Group.BuildDescriptor);
+		}
+	}
+
 	return Request;
 }
 

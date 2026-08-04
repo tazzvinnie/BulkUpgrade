@@ -23,7 +23,6 @@ public:
 private:
 	static bool CommitWithHologramPath(AFGCharacterPlayer* Player, FBulkUpgradePreviewRow& Row, FText& OutFailure);
 	static bool CommitWithManualSpawnPath(AFGCharacterPlayer* Player, FBulkUpgradePreviewRow& Row, FText& OutFailure);
-	static bool ConveyorChainContainsConveyor(const AFGConveyorChainActor* ChainActor, const AFGBuildableConveyorBase* Conveyor);
 	static bool ConveyorSegmentBelongsToDifferentValidChain(const AFGConveyorChainActor* ExpectedChainActor, AFGBuildableConveyorBase* Conveyor);
 	static bool ConveyorChainNeedsStructuralRescue(AFGConveyorChainActor* ChainActor);
 	static int32 SanitizeConveyorChainActor(AFGConveyorChainActor* ChainActor, const TCHAR* Context);
