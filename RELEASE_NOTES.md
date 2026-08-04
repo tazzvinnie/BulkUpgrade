@@ -1,4 +1,4 @@
-# Bulk Upgrade 3.0.1
+# Bulk Upgrade 3.0.2
 
 ## Short Description
 
@@ -43,6 +43,13 @@ This first public build is marked beta because multiplayer and dedicated-server 
 Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under GPLv3. The GPLv3 license text is included with the project.
 
 ## Changelog
+
+### 3.0.2
+
+- Fixed belt/lift upgrades silently doing nothing: the endpoint reconnect call was dropped from the hologram commit path during the 3.0.1 bucket-corruption fix, leaving replacement conveyors unwired. Restored, with self-verification of each connection transfer.
+- Family/type checkboxes in the upgrade popup now actually apply to the commit, not just the cost preview.
+- Mass upgrades no longer get rejected outright for lacking inventory materials; this matches the tool's Free Local Dev cost policy.
+- Fixed a soft-lock where closing the upgrade popup could leave mouse/scroll input stuck in UI-only mode.
 
 ### 3.0.1
 
