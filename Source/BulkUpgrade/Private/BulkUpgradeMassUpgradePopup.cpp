@@ -8,6 +8,7 @@
 #include "Components/CheckBox.h"
 #include "Engine/Texture2D.h"
 #include "FGRecipe.h"
+#include "GameFramework/PlayerController.h"
 #include "InputCoreTypes.h"
 #include "Resources/FGBuildDescriptor.h"
 #include "Resources/FGItemDescriptor.h"
@@ -321,6 +322,12 @@ TSharedRef<SWidget> UBulkUpgradeMassUpgradePopup::RebuildWidget()
 
 void UBulkUpgradeMassUpgradePopup::NativeDestruct()
 {
+	if (APlayerController* OwningController = GetOwningPlayer())
+	{
+		OwningController->bShowMouseCursor = false;
+		OwningController->SetInputMode(FInputModeGameOnly());
+	}
+
 	StatusTextBlock.Reset();
 	ProductionSummaryTextBlock.Reset();
 	CostItemsBox.Reset();
