@@ -337,19 +337,47 @@ bool ReconnectConveyor(AFGBuildableConveyorBase* SourceConveyor, AFGBuildableCon
 	}
 
 	bool bTransferOk = true;
+	bool bHandRewired = false;
 
-	if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection0()->GetConnection())
+	// Only hand-rewire an endpoint that isn't already connected. The vanilla
+	// Upgrade_Implementation call that runs just before this (see CommitWithHologramPath)
+	// already performs its own connection transfer for belts/lifts; re-wiring an endpoint
+	// it already handled is redundant and, because UFGFactoryConnectionComponent has no
+	// awareness of AFGConveyorChainActor, can leave the chain's cached segment item-ranges
+	// stale relative to the real topology.
+	if (!TargetConveyor->GetConnection0()->IsConnected())
 	{
-		SourceConveyor->GetConnection0()->ClearConnection();
-		TargetConveyor->GetConnection0()->SetConnection(Connection);
-		bTransferOk &= TargetConveyor->GetConnection0()->IsConnected();
+		if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection0()->GetConnection())
+		{
+			SourceConveyor->GetConnection0()->ClearConnection();
+			TargetConveyor->GetConnection0()->SetConnection(Connection);
+			bTransferOk &= TargetConveyor->GetConnection0()->IsConnected();
+			bHandRewired = true;
+		}
 	}
 
-	if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection1()->GetConnection())
+	if (!TargetConveyor->GetConnection1()->IsConnected())
 	{
-		SourceConveyor->GetConnection1()->ClearConnection();
-		TargetConveyor->GetConnection1()->SetConnection(Connection);
-		bTransferOk &= TargetConveyor->GetConnection1()->IsConnected();
+		if (UFGFactoryConnectionComponent* Connection = SourceConveyor->GetConnection1()->GetConnection())
+		{
+			SourceConveyor->GetConnection1()->ClearConnection();
+			TargetConveyor->GetConnection1()->SetConnection(Connection);
+			bTransferOk &= TargetConveyor->GetConnection1()->IsConnected();
+			bHandRewired = true;
+		}
+	}
+
+	// If we had to hand-rewire any endpoint ourselves, TargetConveyor's chain/bucket
+	// registration (assigned when the hologram constructed it) is now stale relative to its
+	// real connections. Force the subsystem to invalidate and rebuild that chain so segment
+	// item-ranges get recomputed instead of being left at INDEX_NONE, which crashes
+	// AFGConveyorChainActor::GetItemsForSegment on the very next factory tick.
+	if (bHandRewired)
+	{
+		if (AFGBuildableSubsystem* BuildableSubsystem = AFGBuildableSubsystem::Get(TargetConveyor->GetWorld()))
+		{
+			BuildableSubsystem->SplitConveyorGroupFromAttachment(TargetConveyor);
+		}
 	}
 
 	return bTransferOk;
@@ -1062,67 +1090,91 @@ int32 UBulkUpgradeExecutor::SanitizeConveyorChainActorForPostLoad(AFGConveyorCha
 		return 0;
 	}
 
-	if (!ConveyorChainNeedsStructuralRescue(ChainActor))
-	{
-		return 0;
-	}
-
 	int32 ChangeCount = 0;
-	int32 RemovedSegments = 0;
-	const int32 OriginalSegmentCount = ChainActor->mChainSplineSegments.Num();
 
-	TArray<FConveyorChainSplineSegment> ValidSegments;
-	ValidSegments.Reserve(OriginalSegmentCount);
-
-	const int32 SegmentCount = ChainActor->mChainSplineSegments.Num();
-	for (int32 SegmentIndex = 0; SegmentIndex < SegmentCount; ++SegmentIndex)
+	// Structural rescue (stale/missing ConveyorBase actors on a segment) only fires for
+	// that specific corruption pattern. It's kept as its own branch below.
+	if (ConveyorChainNeedsStructuralRescue(ChainActor))
 	{
-		if (!ChainActor->mChainSplineSegments.IsValidIndex(SegmentIndex))
+		int32 RemovedSegments = 0;
+		const int32 OriginalSegmentCount = ChainActor->mChainSplineSegments.Num();
+
+		TArray<FConveyorChainSplineSegment> ValidSegments;
+		ValidSegments.Reserve(OriginalSegmentCount);
+
+		const int32 SegmentCount = ChainActor->mChainSplineSegments.Num();
+		for (int32 SegmentIndex = 0; SegmentIndex < SegmentCount; ++SegmentIndex)
 		{
-			continue;
-		}
-		
-		FConveyorChainSplineSegment Segment = ChainActor->mChainSplineSegments[SegmentIndex];
-		if (IsValid(Segment.ConveyorBase) && !ConveyorSegmentBelongsToDifferentValidChain(ChainActor, Segment.ConveyorBase))
-		{
-			ValidSegments.Add(MoveTemp(Segment));
-			continue;
+			if (!ChainActor->mChainSplineSegments.IsValidIndex(SegmentIndex))
+			{
+				continue;
+			}
+
+			FConveyorChainSplineSegment Segment = ChainActor->mChainSplineSegments[SegmentIndex];
+			if (IsValid(Segment.ConveyorBase) && !ConveyorSegmentBelongsToDifferentValidChain(ChainActor, Segment.ConveyorBase))
+			{
+				ValidSegments.Add(MoveTemp(Segment));
+				continue;
+			}
+
+			RemovedSegments += 1;
+			UE_LOG(LogBulkUpgrade, Warning,
+				TEXT("BulkUpgrade conveyor sanitizer [%s]: removing stale conveyor segment chain=%s segment=%d oldConveyor=%s conveyorOwner=%s first=%d last=%d"),
+				Context,
+				*GetNameSafe(ChainActor),
+				SegmentIndex,
+				*GetNameSafe(Segment.ConveyorBase),
+				*GetNameSafe(IsValid(Segment.ConveyorBase) ? Segment.ConveyorBase->GetConveyorChainActor() : nullptr),
+				Segment.FirstItemIndex,
+				Segment.LastItemIndex);
 		}
 
-		RemovedSegments += 1;
-		UE_LOG(LogBulkUpgrade, Warning,
-			TEXT("BulkUpgrade conveyor sanitizer [%s]: removing stale conveyor segment chain=%s segment=%d oldConveyor=%s conveyorOwner=%s first=%d last=%d"),
-			Context,
-			*GetNameSafe(ChainActor),
-			SegmentIndex,
-			*GetNameSafe(Segment.ConveyorBase),
-			*GetNameSafe(IsValid(Segment.ConveyorBase) ? Segment.ConveyorBase->GetConveyorChainActor() : nullptr),
-			Segment.FirstItemIndex,
-			Segment.LastItemIndex);
+		if (RemovedSegments > 0)
+		{
+			ChainActor->mChainSplineSegments = MoveTemp(ValidSegments);
+			ChainActor->mConveyorToSplineSegment.Empty();
+			ChainActor->mClientAvailableConveyors.Empty();
+			ChainActor->mClientAvailableConveyorsChanged = true;
+			ChangeCount += RemovedSegments;
+
+			UE_LOG(LogBulkUpgrade, Warning,
+				TEXT("BulkUpgrade conveyor sanitizer [%s]: removed missing conveyors chain=%s removed=%d originalSegments=%d remainingSegments=%d"),
+				Context,
+				*GetNameSafe(ChainActor),
+				RemovedSegments,
+				OriginalSegmentCount,
+				ChainActor->mChainSplineSegments.Num());
+		}
 	}
 
-	if (RemovedSegments > 0)
+	// An invalid LUT (checked above) means the engine itself has already flagged this
+	// chain's per-segment item-range bookkeeping as stale, even when every remaining
+	// segment's ConveyorBase actor is otherwise fine -- exactly the case left behind by
+	// BulkUpgrade rewiring conveyor connections outside the official chain-rebuild APIs
+	// before the SplitConveyorGroupFromAttachment fix in ReconnectConveyor. Reset any
+	// lingering per-segment ranges to INDEX_NONE so nothing indexes into
+	// mConveyorChainItems with a stale value; the chain rebuilds valid ranges once
+	// bHasValidLUT is false. This also self-heals saves made before that fix existed.
+	for (FConveyorChainSplineSegment& Segment : ChainActor->mChainSplineSegments)
 	{
-		ChainActor->mChainSplineSegments = MoveTemp(ValidSegments);
-		ChainActor->mConveyorToSplineSegment.Empty();
-		ChainActor->mClientAvailableConveyors.Empty();
-		ChainActor->mClientAvailableConveyorsChanged = true;
+		if (Segment.FirstItemIndex != INDEX_NONE || Segment.LastItemIndex != INDEX_NONE)
+		{
+			UE_LOG(LogBulkUpgrade, Warning,
+				TEXT("BulkUpgrade conveyor sanitizer [%s]: clearing stale segment item range chain=%s conveyor=%s first=%d last=%d"),
+				Context,
+				*GetNameSafe(ChainActor),
+				*GetNameSafe(Segment.ConveyorBase),
+				Segment.FirstItemIndex,
+				Segment.LastItemIndex);
+			Segment.SetItemIndices(INDEX_NONE, INDEX_NONE);
+			ChangeCount += 1;
+		}
+	}
+
+	if (ChangeCount > 0)
+	{
 		ChainActor->mLeadItemIndex = INDEX_NONE;
 		ChainActor->mTailItemIndex = INDEX_NONE;
-		for (int32 i = 0; i < ChainActor->mChainSplineSegments.Num(); ++i)
-		{
-			ChainActor->mChainSplineSegments[i].SetItemIndices(INDEX_NONE, INDEX_NONE);
-		}
-		ChainActor->bHasValidLUT = false;
-		ChangeCount += RemovedSegments + 1;
-
-		UE_LOG(LogBulkUpgrade, Warning,
-			TEXT("BulkUpgrade conveyor sanitizer [%s]: removed missing conveyors chain=%s removed=%d originalSegments=%d remainingSegments=%d itemRangesCleared=1"),
-			Context,
-			*GetNameSafe(ChainActor),
-			RemovedSegments,
-			OriginalSegmentCount,
-			ChainActor->mChainSplineSegments.Num());
 	}
 
 	ChangeCount += SanitizeConveyorChainActor(ChainActor, Context);

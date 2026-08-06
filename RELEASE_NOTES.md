@@ -1,4 +1,4 @@
-# Bulk Upgrade 3.0.2
+# Bulk Upgrade 3.0.3
 
 ## Short Description
 
@@ -43,6 +43,12 @@ This first public build is marked beta because multiplayer and dedicated-server 
 Bulk Upgrade is derived from MassUpgrade by MarcioHuser and is distributed under GPLv3. The GPLv3 license text is included with the project.
 
 ## Changelog
+
+### 3.0.3
+
+- Fixed a crash (assertion failure in `AFGConveyorChainActor::GetItemsForSegment`, "Array index out of bounds: -1") that could happen on any factory tick after upgrading a belt or lift. The 3.0.2 reconnect fix hand-rewired conveyor connections even when the vanilla upgrade path had already wired them, leaving the belt's chain-actor segment bookkeeping stale; the reconnect now only touches endpoints that are genuinely still unconnected, and forces a proper chain rebuild through `AFGBuildableSubsystem` when it does.
+- The post-load conveyor-chain sanitizer now also repairs chains whose segment bookkeeping was flagged invalid without an obviously broken segment actor (exactly the pattern above), so saves affected by the 3.0.2 bug self-heal the next time they're loaded.
+- Corrected a packaging metadata mismatch (`Version` field vs. SemVer major version) that could cause the upload to ficsit.app to be rejected.
 
 ### 3.0.2
 

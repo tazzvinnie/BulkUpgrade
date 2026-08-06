@@ -17,13 +17,14 @@ Equip the Bulk Upgrade Tool, aim at a supported logistics buildable, and open a 
 
 ## Current Release Status
 
-Version `3.0.2` is marked beta and targets Satisfactory 1.2 / SML 3.12.0.
+Version `3.0.3` is marked beta and targets Satisfactory 1.2 / SML 3.12.0.
 
 Single-player testing on large local factories has been stable after the current conveyor-chain rewrite. Multiplayer and dedicated-server behavior are not claimed yet. Keep save backups before bulk-editing important worlds.
 
 The Windows release package includes both Steam and Epic/EGS binaries.
 
-Version `3.0.2` fixes belt/lift upgrades that could silently do nothing (a reconnect step was dropped in 3.0.1), makes the popup's family/type checkboxes actually apply to the commit, stops mass upgrades from being blocked by missing inventory materials, and fixes a mouse/scroll input soft-lock after closing the popup.
+Version `3.0.3` fixes a crash that could occur on any factory tick after upgrading a belt or lift (stale conveyor-chain segment bookkeeping left behind by the 3.0.2 reconnect fix); saves affected by that bug self-heal the next time they're loaded.
+Version `3.0.2` fixed belt/lift upgrades that could silently do nothing (a reconnect step was dropped in 3.0.1), makes the popup's family/type checkboxes actually apply to the commit, stops mass upgrades from being blocked by missing inventory materials, and fixes a mouse/scroll input soft-lock after closing the popup.
 It also limits each upgrade click to 100 buildables; repeat the operation for larger connected lines.
 
 ## In Game
