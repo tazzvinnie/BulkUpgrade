@@ -11,6 +11,8 @@
 #include "Buildables/FGBuildableStorage.h"
 #include "Buildables/FGBuildableWire.h"
 #include "Components/PrimitiveComponent.h"
+#include "Equipment/FGBuildGun.h"
+#include "Equipment/FGBuildGunBuild.h"
 #include "FGBuildableSubsystem.h"
 #include "FGConstructDisqualifier.h"
 #include "FGCrate.h"
@@ -1682,6 +1684,29 @@ FBulkUpgradeCommitReport UBulkUpgradeExecutor::CommitPlan(UObject* WorldContextO
 	}
 
 	Report.SkippedCount = FMath::Max(0, Report.PlannedCount - Report.AttemptedCount);
+
+	// CommitWithHologramPath() spawns a real hologram on the player's actual, live AFGBuildGun
+	// (via AFGHologram::SpawnHologramFromRecipe(..., Player->GetBuildGun(), ...)) for every row,
+	// then destroys it once construction completes -- reusing the same UFGBuildGunStateBuild
+	// (mHologram/mUpgradedActor) bookkeeping the game itself uses for a normal, single,
+	// player-driven upgrade interaction. Doing that dozens of times in a tight loop with no
+	// cleanup in between was observed to leave the build gun's own hologram state corrupted:
+	// a crash (EXCEPTION_ACCESS_VIOLATION in AFGHologram::SetDisabled, called from the build
+	// gun's normal per-frame hologram tick) turned up shortly after a 78-row mass upgrade,
+	// with LogGame's "HideOutline - Trying to hide outline for invalid actor" logged right
+	// after the commit as an early symptom of the same dangling state.
+	// ResetHologram() is the game's own sanctioned "clean up whatever the hologram left behind"
+	// call (explicitly documented as safe to call on the server) -- call it once after the
+	// batch to make sure the player's own build gun doesn't limp along on stale state.
+	if (Report.bCommittedWorldChanges && IsValid(Player) && IsValid(Player->GetBuildGun()))
+	{
+		if (UFGBuildGunStateBuild* BuildState = Cast<UFGBuildGunStateBuild>(
+			Player->GetBuildGun()->GetBuildGunStateFor(EBuildGunState::BGS_BUILD)))
+		{
+			BuildState->ResetHologram();
+		}
+	}
+
 	RecountCommitPlan(Plan);
 	return Report;
 }
